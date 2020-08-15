@@ -5,7 +5,10 @@ import { debounce } from '../../lib/utils';
 import classNames from '../../lib/classNames';
 import { SelectProps } from '../NativeSelect/NativeSelect';
 import CustomScrollView from '../CustomScrollView/CustomScrollView';
-import { HasRef } from '../../types';
+import { HasRef, HasFormStatus } from '../../types';
+import withAdaptivity from '../../hoc/withAdaptivity';
+import withPlatform from '../../hoc/withPlatform';
+import { getClassName } from '../..';
 
 type SelectValue = string | number | boolean;
 
@@ -32,8 +35,9 @@ export interface SelectChangeResult {
   name: string;
 }
 
-interface Props extends Omit<SelectProps, 'onChange' | 'getRef'>, HasRef<HTMLInputElement> {
+interface Props extends Omit<SelectProps, 'onChange' | 'getRef'>, HasRef<HTMLInputElement>, HasFormStatus {
   options: SelectOption[];
+  popupDirection?: 'top' | 'bottom';
   onChange?: (result: SelectChangeResult) => void;
   onFocus?: () => void;
   onBlur?: () => void;
@@ -41,7 +45,7 @@ interface Props extends Omit<SelectProps, 'onChange' | 'getRef'>, HasRef<HTMLInp
 
 type MouseEventHandler = (event: MouseEvent<HTMLElement>) => void;
 
-export default class CustomSelect extends React.Component<Props, State> {
+class CustomSelect extends React.Component<Props, State> {
   public constructor(props: Props) {
     super(props);
 
@@ -366,7 +370,7 @@ export default class CustomSelect extends React.Component<Props, State> {
 
   renderWithCustomScrollbar() {
     const { opened, options } = this.state;
-    const { placeholder = '', tabIndex, name, getRef, getRootRef } = this.props;
+    const { placeholder = '', tabIndex, name, getRef, getRootRef, popupDirection, status, sizeY, platform } = this.props;
     const selected = this.getSelectedItem();
     const label = !selected ? '' : selected.label;
 
@@ -374,6 +378,7 @@ export default class CustomSelect extends React.Component<Props, State> {
       <>
         <SelectMimicry
           tabIndex={tabIndex}
+          status={status}
           aria-hidden={true}
           onClick={this.onClick}
           onKeyDown={this.handleKeyDownSelect}
@@ -384,6 +389,7 @@ export default class CustomSelect extends React.Component<Props, State> {
           getRootRef={getRootRef}
           className={classNames({
             ['CustomSelect__open']: opened,
+            ['CustomSelect__open--popupDirectionTop']: popupDirection === 'top',
           })}
         >
           {label}
@@ -392,7 +398,9 @@ export default class CustomSelect extends React.Component<Props, State> {
         {opened &&
           <div
             className={classNames({
-              ['CustomSelect__options']: opened,
+              [getClassName('CustomSelect__options', platform)]: opened,
+              ['CustomSelect__options--popupDirectionTop']: popupDirection === 'top',
+              [`CustomSelect__options--sizeY-${sizeY}`]: !!sizeY,
             })}
             onMouseLeave={this.resetFocusedOption}
           >
@@ -416,3 +424,7 @@ export default class CustomSelect extends React.Component<Props, State> {
     );
   }
 }
+
+export default withPlatform(withAdaptivity(CustomSelect, {
+  sizeY: true,
+}));

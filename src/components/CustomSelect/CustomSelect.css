@@ -19,6 +19,13 @@
   z-index: 3;
 }
 
+.CustomSelect__options--popupDirectionTop {
+  bottom: 100%;
+  border-radius: 8px 8px 0 0;
+  border-top: unset;
+  border-bottom: 0;
+}
+
 .CustomSelect__options .CustomScrollView__box {
   max-height: 160px;
 }
@@ -45,4 +52,10 @@
   position: absolute;
   top: 15px;
   right: 12px;
+}
+
+.CustomSelect__options--sizeY-compact .CustomSelect__option {
+  height: 40px;
+  padding: 10px 11px;
+  font-size: 15px;
 }
