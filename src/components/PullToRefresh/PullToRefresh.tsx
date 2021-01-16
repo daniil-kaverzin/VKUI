@@ -1,21 +1,21 @@
 import React, { PureComponent, RefObject } from 'react';
-import PropTypes, { Requireable } from 'prop-types';
 import Touch, { TouchProps, TouchEvent } from '../Touch/Touch';
 import TouchRootContext from '../Touch/TouchContext';
 import FixedLayout from '../FixedLayout/FixedLayout';
 import classNames from '../../lib/classNames';
-import { IOS, ANDROID } from '../../lib/platform';
+import { IOS, ANDROID, VKCOM } from '../../lib/platform';
 import getClassName from '../../helpers/getClassName';
 import PullToRefreshSpinner from './PullToRefreshSpinner';
 import withPlatform from '../../hoc/withPlatform';
-import { HasPlatform } from '../../types';
-import { canUseDOM } from '../../lib/dom';
+import { AnyFunction, HasPlatform } from '../../types';
+import { canUseDOM, DOMProps, withDOM } from '../../lib/dom';
+import { runTapticImpactOccurred } from '../../lib/taptic';
 
 export interface PullToRefreshProps extends TouchProps, HasPlatform {
   /**
    * Будет вызвана для обновления контента
    */
-  onRefresh(): void;
+  onRefresh: AnyFunction;
   /**
    * Определяет, выполняется ли обновление. Для скрытия спиннера после получения контента необходимо передать `false`
    */
@@ -34,11 +34,6 @@ export interface PullToRefreshState {
   spinnerY: PullToRefreshParams['start'];
   spinnerProgress: number;
   contentShift: number;
-}
-
-export interface PullToRefreshContext {
-  document: Requireable<{}>;
-  window: Requireable<{}>;
 }
 
 export interface PullToRefreshParams {
@@ -67,17 +62,17 @@ function cancelEvent(event: any) {
   return false;
 }
 
-class PullToRefresh extends PureComponent<PullToRefreshProps, PullToRefreshState> {
+class PullToRefresh extends PureComponent<PullToRefreshProps & DOMProps, PullToRefreshState> {
   constructor(props: PullToRefreshProps) {
     super(props);
 
     this.params = {
-      start: props.platform === ANDROID ? -45 : -10,
-      max: props.platform === ANDROID ? 80 : 50,
-      maxY: props.platform === ANDROID ? 80 : 400,
-      refreshing: props.platform === ANDROID ? 50 : 36,
+      start: props.platform === ANDROID || props.platform === VKCOM ? -45 : -10,
+      max: props.platform === ANDROID || props.platform === VKCOM ? 80 : 50,
+      maxY: props.platform === ANDROID || props.platform === VKCOM ? 80 : 400,
+      refreshing: props.platform === ANDROID || props.platform === VKCOM ? 50 : 36,
 
-      positionMultiplier: props.platform === ANDROID ? 1 : 0.21,
+      positionMultiplier: props.platform === ANDROID || props.platform === VKCOM ? 1 : 0.21,
     };
 
     this.state = {
@@ -101,22 +96,18 @@ class PullToRefresh extends PureComponent<PullToRefreshProps, PullToRefreshState
 
   contentRef: RefObject<HTMLDivElement>;
 
-  static contextTypes: PullToRefreshContext = {
-    window: PropTypes.any,
-    document: PropTypes.any,
-  };
-
   get document() {
-    return this.context.document || document;
+    return this.props.document;
   }
 
   get window() {
-    return this.context.window || window;
+    return this.props.window;
   }
 
   componentDidMount() {
     if (canUseDOM) {
       this.document.addEventListener('touchmove', this.onWindowTouchMove, {
+        // @ts-ignore
         cancelable: true,
         passive: false,
       });
@@ -129,6 +120,7 @@ class PullToRefresh extends PureComponent<PullToRefreshProps, PullToRefreshState
     // https://github.com/VKCOM/VKUI/issues/444
     if (canUseDOM) {
       this.document.removeEventListener('touchmove', this.onWindowTouchMove, {
+        // @ts-ignore
         cancelable: true,
         passive: false,
       });
@@ -219,10 +211,11 @@ class PullToRefresh extends PureComponent<PullToRefreshProps, PullToRefreshState
     if (!this.state.refreshing && this.props.onRefresh) {
       this.setState({
         refreshing: true,
-        spinnerY: this.props.platform === ANDROID ? this.params.refreshing : this.state.spinnerY,
+        spinnerY: this.props.platform === ANDROID || this.props.platform === VKCOM ? this.params.refreshing : this.state.spinnerY,
       });
 
       this.props.onRefresh();
+      runTapticImpactOccurred('light');
     }
   }
 
@@ -247,7 +240,7 @@ class PullToRefresh extends PureComponent<PullToRefreshProps, PullToRefreshState
   }
 
   render() {
-    const { children, className, onRefresh, isFetching, platform, ...restProps } = this.props;
+    const { children, className, onRefresh, isFetching, platform, window, document, ...restProps } = this.props;
     const { watching, refreshing, spinnerY, spinnerProgress, canRefresh, touchDown, contentShift } = this.state;
 
     const spinnerTransform = `translate3d(0, ${spinnerY}px, 0)`;
@@ -255,7 +248,7 @@ class PullToRefresh extends PureComponent<PullToRefreshProps, PullToRefreshState
 
     if (platform === IOS && refreshing && !touchDown) {
       contentTransform = 'translate3d(0, 100px, 0)';
-    } else if (platform === IOS && contentShift) {
+    } else if (platform === IOS && (contentShift || refreshing)) {
       contentTransform = `translate3d(0, ${contentShift}px, 0)`;
     }
 
@@ -299,4 +292,4 @@ class PullToRefresh extends PureComponent<PullToRefreshProps, PullToRefreshState
   }
 }
 
-export default withPlatform(PullToRefresh);
+export default withPlatform(withDOM<PullToRefreshProps>(PullToRefresh));

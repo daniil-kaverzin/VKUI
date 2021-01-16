@@ -3,9 +3,9 @@ import getClassName from '../../helpers/getClassName';
 import classNames from '../../lib/classNames';
 import { createMasks } from './masks';
 import { useBrowserInfo } from '../../hooks/useBrowserInfo';
-import { IOS } from '../../lib/platform';
-
-createMasks();
+import usePlatform from '../../hooks/usePlatform';
+import { System } from '../../lib/browser';
+import { useIsomorphicLayoutEffect } from '../../lib/useIsomorphicLayoutEffect';
 
 export interface UsersStackProps extends HTMLAttributes<HTMLDivElement> {
   /**
@@ -28,8 +28,13 @@ export interface UsersStackProps extends HTMLAttributes<HTMLDivElement> {
 }
 
 const UsersStack: FC<UsersStackProps> = (props) => {
-  const { platform, platformVersion } = useBrowserInfo();
+  const { system, systemVersion } = useBrowserInfo();
+  const platform = usePlatform();
   const { className, photos, visibleCount, size, layout, children, ...restProps } = props;
+
+  useIsomorphicLayoutEffect(() => {
+    createMasks();
+  }, []);
 
   const othersCount = Math.max(0, photos.length - visibleCount);
   const canShowOthers = othersCount > 0 && size === 'm';
@@ -37,8 +42,8 @@ const UsersStack: FC<UsersStackProps> = (props) => {
   const photosShown = photos.slice(0, visibleCount);
 
   let canUseClipPath = true;
-  if (platform === IOS) {
-    canUseClipPath = platformVersion && platformVersion.major >= 12;
+  if (system === System.IOS) {
+    canUseClipPath = systemVersion && systemVersion.major >= 12;
   }
 
   return (

@@ -2,20 +2,21 @@ import React, { FunctionComponent, HTMLAttributes } from 'react';
 import classNames from '../../lib/classNames';
 import getClassname from '../../helpers/getClassName';
 import usePlatform from '../../hooks/usePlatform';
+import { HasRootRef } from '../../types';
 
-export interface CardProps extends HTMLAttributes<HTMLDivElement> {
-  size?: 's' | 'm' | 'l';
+export interface CardProps extends HTMLAttributes<HTMLDivElement>, HasRootRef<HTMLDivElement> {
   mode?: 'tint' | 'shadow' | 'outline';
 }
 
-const Card: FunctionComponent<CardProps> = ({ size, mode, children, style, className, ...restProps }: CardProps) => {
+const Card: FunctionComponent<CardProps> = ({ mode, children, style, className, getRootRef, ...restProps }: CardProps) => {
   const platform = usePlatform();
 
   return (
     <div
       {...restProps}
       style={style}
-      className={classNames(className, getClassname('Card', platform), `Card--sz-${size}`, `Card--md-${mode}`)}
+      ref={getRootRef}
+      className={classNames(className, getClassname('Card', platform), `Card--md-${mode}`)}
     >
       <div className="Card__in">
         {children}
@@ -25,7 +26,6 @@ const Card: FunctionComponent<CardProps> = ({ size, mode, children, style, class
 };
 
 Card.defaultProps = {
-  size: 'm',
   mode: 'tint',
 };
 

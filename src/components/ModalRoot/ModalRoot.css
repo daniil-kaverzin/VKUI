@@ -20,6 +20,11 @@
   transition: none;
 }
 
+.ModalRoot--switching .ModalRoot__mask {
+  /** Во время автоматической анимации смены модалок с фоном взаимодействовать нельзя */
+  pointer-events: none;
+}
+
 .ModalRoot__viewport {
   position: absolute;
   top: 0;
@@ -33,7 +38,8 @@
   top: var(--safe-area-inset-top);
 }
 
-.ModalRoot--vkapps.ModalRoot--android .ModalRoot__viewport {
+.ModalRoot--vkapps.ModalRoot--android .ModalRoot__viewport,
+.ModalRoot--vkapps.ModalRoot--vkcom .ModalRoot__viewport {
   top: var(--panelheader_height_android);
 }
 

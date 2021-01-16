@@ -8,6 +8,12 @@
   pointer-events: none;
 }
 
+.ModalPage--desktop {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 .ModalPage__in-wrap {
   width: 100%;
   height: 100%;
@@ -23,24 +29,12 @@
   pointer-events: none;
 }
 
-.ModalPage--ios .ModalPage__in-wrap {
-  transition: transform 400ms var(--ios-easing);
-}
-
-.ModalPage--android .ModalPage__in-wrap {
-  transition: transform 320ms var(--android-easing);
-}
-
-.ModalRoot--touched .ModalPage__in-wrap {
-  transition: none;
-}
-
 .ModalPage__in {
-  width: 700px;
+  width: 416px;
   max-width: 100%;
   margin: 0 auto;
   background: var(--background_content);
-  overflow: hidden;
+  overflow: visible;
   position: relative;
   box-sizing: border-box;
   height: 100%;
@@ -48,21 +42,17 @@
   flex-direction: column;
 }
 
-.ModalPage--ios .ModalPage__in {
-  padding-top: var(--modalheader_height_ios);
-  border-radius: 14px 14px 0 0;
-}
-
-.ModalPage--android .ModalPage__in {
-  padding-top: var(--modalheader_height_android);
-  border-radius: 12px 12px 0 0;
-}
-
 .ModalPage__header {
-  position: absolute;
-  top: 0;
-  left: 0;
   width: 100%;
+}
+
+.ModalPage__content-wrap {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border-bottom-left-radius: inherit;
+  border-bottom-right-radius: inherit;
 }
 
 .ModalPage__content {
@@ -72,8 +62,9 @@
   box-sizing: border-box;
 }
 
+.ModalPage--desktop .ModalPage__content,
 .ModalRoot__modal--expandable .ModalPage__content {
-  overflow-y: scroll;
+  overflow-y: auto;
   -webkit-overflow-scrolling: touch;
 }
 
@@ -95,5 +86,72 @@
 }
 
 .ModalRoot--touched .ModalPage__footer {
+  transition: none;
+}
+
+/**
+ * iOS
+ */
+
+.ModalPage--ios .ModalPage__in-wrap {
+  transition: transform 400ms var(--ios-easing);
+}
+
+.ModalPage--ios .ModalPage__in {
+  border-radius: 14px 14px 0 0;
+}
+
+/**
+ * Android + vkcom
+ */
+
+.ModalPage--android .ModalPage__in-wrap,
+.ModalPage--vkcom .ModalPage__in-wrap {
+  transition: transform 320ms var(--android-easing);
+}
+
+.ModalPage--android .ModalPage__in,
+.ModalPage--vkcom .ModalPage__in {
+  border-radius: 12px 12px 0 0;
+}
+
+.ModalPage--vkcom .ModalPage__in {
+  width: 448px;
+}
+
+/**
+ * desktop
+ */
+
+.ModalPage--desktop .ModalPage__in-wrap {
+  align-items: center;
+  opacity: 0;
+  transition: opacity 340ms var(--android-easing);
+  width: auto;
+  height: auto;
+  position: relative;
+  transform: none;
+}
+
+.ModalPage--desktop .ModalPage__in {
+  height: auto;
+  max-height: 640px;
+  box-shadow:
+          0 16px 16px rgba(0, 0, 0, .16),
+          0 0 8px rgba(0, 0, 0, .12);
+  border-radius: 8px;
+}
+
+@media (max-height: 672px) {
+  .ModalPage--desktop .ModalPage__in {
+    max-height: calc(100vh - 32px);
+  }
+}
+
+/**
+ * common
+ */
+
+.ModalRoot--touched .ModalPage__in-wrap {
   transition: none;
 }

@@ -1,32 +1,47 @@
 import React, { createContext, FC } from 'react';
-import { OSType, platform } from './platform';
+import { PlatformType, platform } from './platform';
+import { BrowserInfo, computeBrowserInfo } from './browser';
+import { DOMContext, getDOM } from '../lib/dom';
 
 export interface SSRContextInterface {
-  platform: OSType;
+  platform: PlatformType;
   userAgent?: string;
+  browserInfo?: BrowserInfo;
 }
 
 export const SSRContext = createContext<SSRContextInterface>({
   platform: null,
   userAgent: '',
+  browserInfo: undefined,
 });
 
 export interface SSRWrapperProps {
   userAgent?: string;
+  browserInfo?: BrowserInfo;
 }
 
 export const SSRWrapper: FC<SSRWrapperProps> = (props) => {
-  const { userAgent, children } = props;
+  let { userAgent, browserInfo, children } = props;
+
+  if (!browserInfo && userAgent) {
+    browserInfo = computeBrowserInfo(userAgent);
+  }
 
   // TODO: Каждый раз создаётся новый объект для контекста – плохо
   const contextValue = {
-    platform: platform(userAgent),
+    platform: platform(browserInfo),
+    browserInfo,
     userAgent,
   };
 
+  // TODO: move to state, and update in effect?
+  const dom = getDOM();
+
   return (
     <SSRContext.Provider value={contextValue}>
-      {children}
+      <DOMContext.Provider value={dom}>
+        {children}
+      </DOMContext.Provider>
     </SSRContext.Provider>
   );
 };

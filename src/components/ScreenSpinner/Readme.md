@@ -1,4 +1,4 @@
-Компонент-обертка над [Spinner](https://vkcom.github.io/vkui-styleguide/#!/Spinner).
+Компонент-обертка над [Spinner](#!/Spinner).
 Рекомендуется использовать в случаях, когда требуется заблокировать интерфейс до завершения асинхронного процесса.
 
 ```jsx
@@ -21,9 +21,9 @@ class Example extends React.Component {
       <View popout={this.state.popout} activePanel="spinner">
         <Panel id="spinner">
           <PanelHeader>ScreenSpinner</PanelHeader>
-          <FormLayout>
+          <Group>
             <CellButton onClick={this.onClick.bind(this)}>Запустить долгий процесс</CellButton>
-          </FormLayout>
+          </Group>
         </Panel>
       </View>
     )
